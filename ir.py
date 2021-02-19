@@ -37,7 +37,9 @@ def read_shape_file():
     plt.show()
 read_shape_file()
 
+
 def add_basemap_():
+    """Add a basemap"""
     country_plt = country.plot(edgecolor='black',facecolor='none',
                                linewidth=1,
                                figsize=(9, 9)
@@ -45,6 +47,7 @@ def add_basemap_():
     ctx.add_basemap(country_plt)
     plt.show()
 add_basemap_()
+
 
 
 def get_coord():
