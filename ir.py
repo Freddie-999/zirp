@@ -1,29 +1,9 @@
-import csv
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import contextily as ctx
 
 
-filepath = '/Users/freddie/Downloads/data.csv'
-
-foi = input('Enter the name of the facility:\n')
-if (foi == ""):
-    print('Input cannot be empty')
-
-found = False
-
-with open(filepath) as f:
-    csv = csv.DictReader(f)
-    for row in csv:
-        if (row['Summary'] == foi):
-          print(f"Facility's status is {row['Status']} and it's in the {row['Zone']} distrct.")
-          found = True
-          break
-
-
-if not found:
-    print("No record found.")
 
 country = gpd.read_file('/Users/freddie/Downloads/district/Districts_Ghana_project.shp')
 
@@ -32,20 +12,23 @@ def read_shape_file():
     """read the of country and towns""" #TOdo towns
     country = gpd.read_file('/Users/freddie/Downloads/district/Districts_Ghana_project.shp')
     print(country.shape)
-    print(country.head())
+    #print(country.head())
     #country.plot()
-    plt.show()
+    #plt.show()
 read_shape_file()
 
+#convert from on crs to another
+country_new = country.to_crs(epsg=3857)
+print('web mercator', country_new.crs)
 
 def add_basemap_():
     """Add a basemap"""
-    country_plt = country.plot(edgecolor='black',facecolor='none',
-                               linewidth=1,
-                               figsize=(9, 9)
-                              )
-    ctx.add_basemap(country_plt)
+    country_plt = country_new.plot(figsize=(9, 16), zorder=10, ec='gray', alpha=0.25)
+    #src_basemap = ctx.providers.Stamen.Terrain
+    src_basemap = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    ctx.add_basemap(country_plt, source=src_basemap, alpha=0.6, zorder=8)
     plt.show()
+    
 add_basemap_()
 
 
