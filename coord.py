@@ -1,5 +1,12 @@
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import contextily as ctx
+from shapely.geometry import Point
 import json
-from shapely.geometry import mapping, shape
+
+
+country = gpd.read_file('/Users/freddie/Downloads/district/Districts_Ghana_project.shp')
 
 def get_coord():
     """get coordinates from user and plot """ 
@@ -9,20 +16,22 @@ def get_coord():
             return float(x), float(y)
         except ValueError:
             print('check your input')            
+#coordinates = get_coord()
+#print(coordinates)
+#coordinates.file"coordinates.geojson", driver='GeoJSON')
 
-coordinates = get_coord()
+def coord_file():
+    """write coordinates to file"""
+    coordinates = get_coord()
+    filename = 'coordinates.json'
+    with open(filename, 'w') as f:
+        json.dump(coordinates, f)
+        return coordinates
+coord_file()
 
-print(coordinates)
+def read_coord():
+    """load coordniates from user input"""
+    poi = gpd.read_file('coordinates.json')
+    print(poi.shape)
 
-s = shape(json.loads('{"type": "Point", "coordinates": [0.0, 0.0]}'))
-s
-<shapely.geometry.point.Point object at 0x...>
-print(json.dumps(mapping(s)))
-{"type": "Point", "coordinates": [0.0, 0.0]}
-
-
-def plot_coord():
-    """plot coordinates from user on a map"""
-    coordplt = Point(coordinates)
-    gdf_coordplt = gpd.GeoSeries([coordplt], crs={'init': 'epsg:4326'}).plot()
-    plt.show()
+read_coord()
