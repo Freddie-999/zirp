@@ -28,13 +28,6 @@ def coord_file():
         json.dump(coordinates, f)
         return coordinates
 coord_file()
-    
-
-    
-    #gdf_coordplt = gpd.GeoSeries([coordplt], crs={'init': 'epsg:4326'})
-    #gdf_coordplt.plot()
-    #plt.show()
-
 
 
 def read_shape_file():
@@ -54,6 +47,18 @@ print('web mercator', country_new.crs)
 
 def select_dist():
     """select district of interest"""
+    pass
+
+
+
+def get_nearest_town():
+    """find the nearest town to incident"""
+    pass
+
+
+
+def get_info():
+    """return the info for the nearest town"""
     pass
 
 
