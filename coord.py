@@ -12,13 +12,31 @@ def get_coord():
     """get coordinates from user and plot """ 
     while True:
         try:
-            x, y = (input("Enter coordinates separated by a ',':\n").split(","))
-            return float(x), float(y)
+            longitude, latitude = (input("Enter coordinates separated by a ',':\n").split(","))
+            return float(longitude), float(latitude)
         except ValueError:
-            print('check your input')            
-#coordinates = get_coord()
+            print('check your input')
+
+ 
+         
+coordinates = get_coord()
 #print(coordinates)
 #coordinates.file"coordinates.geojson", driver='GeoJSON')
+
+
+coordinates_dictionary = {
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [coordinates]
+  },
+  "properties": {
+    "name": "last known location"
+  }
+}
+coordinates_json_string = json.dumps(coordinates_dictionary)
+print(coordinates_json_string)
+
 
 def coord_file():
     """write coordinates to file"""
