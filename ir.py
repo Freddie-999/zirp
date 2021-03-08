@@ -6,8 +6,6 @@ from shapely.geometry import Point
 import json
 
 
-country = gpd.read_file('/Users/freddie/Downloads/district/Districts_Ghana_project.shp')
-
 def get_coord():
     """get coordinates from user and plot """ 
     while True:
@@ -40,19 +38,45 @@ def read_point():
 mypoint = read_point()
 
 
+
 def read_shape_file():
-    """read the of country and towns""" #TOdo towns
-    country = gpd.read_file('/Users/freddie/Downloads/district/Districts_Ghana_project.shp')
-    countryboundary_projected = country.to_crs(epsg=3857)
-    return countryboundary_projected
+    """read the districts to gpd""" #TOdo towns
+    districts = gpd.read_file('/Users/freddie/Downloads/district/GH_DISTRICTS_260.shp')
+    districtboundary_projected = districts.to_crs(epsg=3857)
+    return districtboundary_projected
 mydistrict = read_shape_file()
 
 
-plt.rcParams['figure.figsize'] = [10, 10] #this sets the size of the figure
+def read_towns():
+    """get coordinates of towns"""
+    df = pd.read_csv('/Users/freddie/Downloads/jira_data.csv')
+    points = df.apply(lambda row: Point(row.Longitude, row.Latitude), axis=1)
+    towns = gpd.GeoDataFrame(df, geometry=points)
+    towns.plot()
 
+read_towns()
+
+#spatial analysis
+buffer = mypoint['geometry'].buffer(distance = 1200)
+buffer_df = gpd.GeoDataFrame(gpd.GeoSeries(buffer))
+buffer_df = buffer_df.rename(columns={0:'geometry'}).set_geometry('geometry')
+print(buffer_df)
+buffer_df.to_file(r"/Users/freddie/test2.shp")
+
+join = gpd.sjoin(mydistrict, buffer_df, how="inner", op="intersects")
+print(join)
+join.to_file(r"/Users/freddie/test.shp")
+
+
+
+#plotting to map
+plt.rcParams['figure.figsize'] = [10, 10] #this sets the size of the figure
 fig, myax = plt.subplots()
-mydistrict.plot(ax=myax, color='red', ec='gray', alpha=0.2)
-mypoint.plot(ax=myax, color='blue')
+#mydistrict.plot(ax=myax, ec='gray', alpha=0.2, column='Name')
+buffer.plot(ax=myax, ec='gray', alpha=0.2, edgecolor='black')
+mypoint.plot(ax=myax, color='red')
+#join.plot(ax=myax, ec='gray', alpha=0.2, edgecolor='black')
+#mytowns.plot(ax=myax, color='green')
 
 def add_basemap():
     print("Drawing map, please wait...")
@@ -61,12 +85,6 @@ def add_basemap():
     plt.show()
 add_basemap() 
 
-
-
-
-def select_dist():
-    """select district of interest"""
-    pass
 
 
 
