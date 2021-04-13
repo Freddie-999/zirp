@@ -8,7 +8,7 @@ import json
 #set paths for shapefiles
 towns = '/Users/freddie/Downloads/zz/zirp.shp'
 districts = '/Users/freddie/Downloads/district/GH_DISTRICTS_260.shp'
-
+json_coordinates = 'new_coords.geojson'
 
 def get_coord():
 
@@ -21,7 +21,7 @@ def get_coord():
             print('check your input')   
     
 
-def coord_json(coords):
+def write_coordinates_to_file(coords, filepath):
     """converts coord tuple to json"""
     coordinates_dictionary = {
     "type": "Feature",
@@ -33,12 +33,12 @@ def coord_json(coords):
         "name": "last known location"
     }
     }
-    with open('new_coords.geojson', 'w') as f:
+    with open(filepath, 'w') as f:
         json.dump(coordinates_dictionary, f)
 
 
 
-def read_point():
+def read_point(filepath):
     """read coordinates on a from the saved .json file"""
     point_df = gpd.read_file('new_coords.geojson')
     point_df_new = point_df.to_crs(epsg=3857)
@@ -52,11 +52,10 @@ def read_shape_file(file_path):
     return file_projected
 
 
-
-def get_geoprocess():
+def get_geoprocess(point_df):
 
     #spatial analysis
-    buffer = read_point()['geometry'].buffer(distance = 1200)        
+    buffer = point_df['geometry'].buffer(distance = 1200)        
     buffer_df = gpd.GeoDataFrame(gpd.GeoSeries(buffer))
     buffer_df = buffer_df.rename(columns={0:'geometry'}).set_geometry('geometry')
     print(buffer_df)
@@ -67,47 +66,49 @@ def get_geoprocess():
     print('this is a join....\n')
     print(join)
     join.to_file(r"/Users/freddie/test.shp")
-
-    print('preparing another buffer\n')
-
     return buffer_df
 
-def buffer_point():
-    buffer_new = read_point()['geometry'].buffer(distance = 5000)        
+
+def buffer_point(point_df):
+    buffer_new = point_df['geometry'].buffer(distance = 2500)        
     buffer_new_df = gpd.GeoDataFrame(gpd.GeoSeries(buffer_new))
     buffer_new_df = buffer_new_df.rename(columns={0:'geometry'}).set_geometry('geometry')
     print(buffer_new_df)
     return buffer_new_df
     
 
-def get_aoi_towns():
+def get_aoi_towns(all_towns, buffer_size, how):
     """get towns that are with the 3000m buffer"""
-    towns_in_aoi = gpd.overlay(read_shape_file(towns), buffer_point(), how = 'intersection')
+    towns_in_aoi = gpd.overlay(all_towns, buffer_size, how) #(read_shape_file(towns), buffer_point(), how = 'intersection')
     print("these are the towns we really want to look at")
     print(towns_in_aoi)
     return towns_in_aoi
 
 
-def add_basemap():
+def add_basemap(point_df, buffer_, closest_town):
     print("Drawing map, please wait...")
     #plotting to map
     plt.rcParams['figure.figsize'] = [10, 10] #this sets the size of the figure
     fig, myax = plt.subplots()
-    read_point().plot(ax=myax, color='red')
-    get_geoprocess().plot(ax=myax, ec='gray', alpha=0.2, edgecolor='black')
-    get_aoi_towns().plot(ax=myax, color='green')
+    point_df.plot(ax=myax, color='red')
+    buffer_.plot(ax=myax, ec='gray', alpha=0.2, edgecolor='black')
+    closest_town.plot(ax=myax, color='green')
     src_basemap = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
     ctx.add_basemap(ax=myax, source=src_basemap, alpha=0.6, zorder=8)
     plt.show()
 
 
 
-
 def main():
-    coord_json(get_coord())                   
-    add_basemap() 
+    coordinates_from_user = get_coord()
+    write_coordinates_to_file(coordinates_from_user, json_coordinates)
+    point_dataframe = read_point(json_coordinates)
+    buffered_point = buffer_point(point_dataframe)
+    towns_data = get_aoi_towns(read_shape_file(towns), buffered_point, 'intersection')
+    add_basemap(point_dataframe,buffered_point ,towns_data) 
+
 
 if __name__ == '__main__':
-    coord_json((2,5))
+    main()
 
 
